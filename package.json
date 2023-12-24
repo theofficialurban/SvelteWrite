@@ -25,7 +25,15 @@
 		"!dist/**/*.spec.*"
 	],
 	"peerDependencies": {
-		"svelte": "^4.0.0"
+		"svelte": "^4.0.0",
+		"appwrite": "^13.0.1",
+		"lodash-es": "^4.17.21"
+	},
+	"repository": {
+		"url": "https://github.com/theofficialurban/SvelteWrite"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
