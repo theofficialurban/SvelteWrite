@@ -1,5 +1,5 @@
 {
-	"name": "@theofficialurban/SvelteWrite",
+	"name": "@theofficialurban/sveltewrite",
 	"version": "1.0.0",
 	"scripts": {
 		"dev": "vite dev",

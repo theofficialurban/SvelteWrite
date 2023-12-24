@@ -5,7 +5,7 @@ A wrapper for Appwrite collections, buckets, and authentication with realtime up
 ## SvelteWrite
 
 ```ts
-import SvelteWrite from '@theofficialurban/SvelteWrite';
+import SvelteWrite from '@theofficialurban/sveltewrite';
 ```
 
 ### `SvelteWrite.Provider`
@@ -26,7 +26,7 @@ The `SvelteWrite.Provider` is the top level provider component that would wrap y
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/SvelteWrite';
+	import SvelteWrite from '@theofficialurban/sveltewrite';
 </script>
 
 <SvelteWrite.Provider projectId="1234" let:sveltewrite>
@@ -54,7 +54,7 @@ The `SvelteWrite.Collection` component gives you access to a collection that wil
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/SvelteWrite';
+	import SvelteWrite from '@theofficialurban/sveltewrite';
 </script>
 
 <SvelteWrite.Provider projectId="1234" let:sveltewrite>
@@ -87,7 +87,7 @@ Realtime Access to Storage Buckets
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/SvelteWrite';
+	import SvelteWrite from '@theofficialurban/sveltewrite';
 </script>
 
 <SvelteWrite.Provider projectId="1234" let:sveltewrite>
@@ -117,7 +117,7 @@ _No Default Slot_
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/SvelteWrite';
+	import SvelteWrite from '@theofficialurban/sveltewrite';
 </script>
 
 <SvelteWrite.Provider projectId="1234" let:sveltewrite>
@@ -156,7 +156,7 @@ A document with realtime updates
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/SvelteWrite';
+	import SvelteWrite from '@theofficialurban/sveltewrite';
 </script>
 
 <SvelteWrite.Provider projectId="1234" let:sveltewrite>
