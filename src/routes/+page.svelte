@@ -1,26 +1,21 @@
 <script lang="ts">
-	import SvelteWrite from '$lib/index.js';
+	import * as SW from '$lib/index.js';
+
+	import { page } from '$app/stores';
+	const sveltewrite = $page.data.sveltewrite;
 </script>
 
-<SvelteWrite.Provider projectId="657df22a1439a12f822a" let:sveltewrite>
-	<SvelteWrite.Login {sveltewrite}></SvelteWrite.Login><br />
-	<SvelteWrite.AccountProvider {sveltewrite}>
-		<svelte:fragment slot="loggedOut">Logged Out</svelte:fragment>
-		<svelte:fragment slot="loggedIn">
-			<!-- <SvelteWrite.Collection {sveltewrite} dbId="main" colId="test" let:collection>
+<SW.Login {sveltewrite}></SW.Login><br />
+<SW.AccountProvider {sveltewrite}>
+	<svelte:fragment slot="loggedOut">Logged Out</svelte:fragment>
+	<svelte:fragment slot="loggedIn">
+		<!-- <SW.Collection {sveltewrite} dbId="main" colId="test" let:collection>
 				{#each collection.documents as item}
 					<span>{item.$id} {item.test}</span><br />
 				{/each}
-			</SvelteWrite.Collection> -->
-			<SvelteWrite.Document
-				{sveltewrite}
-				dbId="main"
-				colId="test"
-				docId="658756e3d9c8a3759624"
-				let:document
-			>
-				{document.item?.$id}
-			</SvelteWrite.Document>
-		</svelte:fragment>
-	</SvelteWrite.AccountProvider><br />
-</SvelteWrite.Provider>
+			</SW.Collection> -->
+		<SW.Document {sveltewrite} dbId="main" colId="test" docId="658756e3d9c8a3759624" let:document>
+			{document.item?.$id}
+		</SW.Document>
+	</svelte:fragment>
+</SW.AccountProvider><br />

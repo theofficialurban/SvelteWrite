@@ -149,7 +149,6 @@ export class Document<T extends Models.Document = Models.Document> {
 			['[collId]', this.colId],
 			['[itemId]', this.docId]
 		);
-		console.log(channel);
 		this.sveltewrite.client.subscribe<T>(channel, (p) => {
 			this.#item = p.payload;
 		});
@@ -176,7 +175,6 @@ export class Bucket {
 			if (browser) {
 				const channel = fillChannelString(AppwriteChannel.bucket, ['[bucketId]', this.bucketId]);
 				this.SvelteWrite.client.subscribe<Models.File>(channel, (payload) => {
-					console.log(payload);
 					const eventType = getEvent('FILES', payload.events);
 					if (eventType == AppwriteEvent.BUCKET_CREATE) {
 						this.addFile(payload.payload);
@@ -209,7 +207,6 @@ export class Bucket {
 			const files = await this.SvelteWrite.storage.listFiles(this.bucketId, queries);
 			this.#files = files.files;
 			this.#total = files.total;
-			console.log(files);
 		} catch (error) {
 			throw new Error(`Error on intial file load ${error}`);
 		}
@@ -233,7 +230,6 @@ export class Collection<T extends Models.Document = Models.Document> {
 		this.initialLoad(queries).then(() => {
 			if (browser) {
 				this.SvelteWrite.client.subscribe<T>(channel, (payload) => {
-					console.log(payload);
 					const eventType = getEvent('DOCUMENTS', payload.events);
 					if (eventType == AppwriteEvent.DOCUMENT_DELETE) {
 						this.removeDocument(payload.payload.$id);
@@ -264,7 +260,6 @@ export class Collection<T extends Models.Document = Models.Document> {
 			);
 			this.#documents = docs.documents;
 			this.#total = docs.total;
-			console.log(this.#documents);
 		} catch (error) {
 			throw new Error(`Error on Initial Collection Load ${error}`);
 		}
@@ -277,23 +272,14 @@ export class Collection<T extends Models.Document = Models.Document> {
 	}
 }
 export default class SvelteWrite {
-	client: Client;
 	database: Databases;
 	storage: Storage;
 	account: Account;
-	constructor(
-		private _endpoint: string,
-		private _projectId: string
-	) {
-		this.client = new Client();
-		this.client.setEndpoint(this._endpoint).setProject(this._projectId);
+	constructor(public client: Client) {
 		this.database = new Databases(this.client);
 		this.storage = new Storage(this.client);
 		this.account = new Account(this.client);
 
 		return this;
 	}
-	subscribe = () => {
-		return this.client.subscribe;
-	};
 }

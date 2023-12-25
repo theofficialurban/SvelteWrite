@@ -1,19 +1,10 @@
 // Reexport your entry components here
-import { default as SW } from './SvelteWrite/SvelteWrite.svelte.js';
+import SvelteWrite from './SvelteWrite/SvelteWrite.svelte.js';
 import AccountProvider from './SvelteWrite/components/Account/account-provider.svelte';
-import AppwriteProvider from './SvelteWrite/components/Provider/appwrite-provider.svelte';
-import StorageBucket from './SvelteWrite/components/Bucket/storage-bucket.svelte';
+import Bucket from './SvelteWrite/components/Bucket/storage-bucket.svelte';
 import Collection from './SvelteWrite/components/Collection/collection.svelte';
-import AccountLogin from './SvelteWrite/components/Account/account-login.svelte';
-import AppwriteDocument from './SvelteWrite/components/Document/appwrite-document.svelte';
-const SvelteWrite = {
-	Provider: AppwriteProvider,
-	AccountProvider,
-	Bucket: StorageBucket,
-	Collection,
-	Login: AccountLogin,
-	SvelteWrite: SW,
-	Document: AppwriteDocument
-};
-export type { SW as SvelteWrite };
-export default SvelteWrite;
+import Login from './SvelteWrite/components/Account/account-login.svelte';
+import Document from './SvelteWrite/components/Document/appwrite-document.svelte';
+export { AccountProvider, Bucket, Collection, Login, SvelteWrite, Document };
+
+export type { SvelteWrite as default };

@@ -5,36 +5,41 @@ A wrapper for Appwrite collections, buckets, and authentication with realtime up
 ## SvelteWrite
 
 ```ts
-import SvelteWrite from '@theofficialurban/sveltewrite';
+import * as SW from '@theofficialurban/sveltewrite';
 ```
 
-### `SvelteWrite.Provider`
+**Classes**:
 
-The `SvelteWrite.Provider` is the top level provider component that would wrap your top-level layout.
+- `SW.SvelteWrite` - Top Class
 
-**Props**
+**Components** (see below for more on each component)
 
-- `projectId` - Appwrite Project ID
-- `endpoint` - Defaults to `https://cloud.appwrite.io/v1`
+- `SW.AccountProvider` - Component, Account Provider
+- `SW.Collection` - Collection, Component
+- `SW.Bucket` - Bucket, Component
+- `SW.Login` - Login Component
+- `SW.Document` - Doc Component
 
-**Slots / Props**
-
-- `default`
-  - `sveltewrite` - The SvelteWrite instance that is needed for the other components
+### Quick Start
 
 **Example**
 
-```html
-<script lang="ts">
-	import SvelteWrite from '@theofficialurban/sveltewrite';
-</script>
+**First you should create an Appwrite client in `+layout.ts`**
 
-<SvelteWrite.Provider projectId="1234" let:sveltewrite>
-	// You will need `let:sveltewrite` to use other components .....
-</SvelteWrite.Provider>
+```ts
+// on +layout.ts
+import { Client } from 'appwrite';
+import { SvelteWrite } from '@theofficialurban/sveltewrite';
+export const load = async () => {
+	const client = new Client().setEndpoint('...').setProject('...');
+	const sveltewrite = new SvelteWrite(client);
+	return {
+		sveltewrite
+	};
+};
 ```
 
-### `SvelteWrite.Collection`
+### `SW.Collection`
 
 The `SvelteWrite.Collection` component gives you access to a collection that will have a maintained state with realtime updates (live create / update / delete)
 
@@ -54,20 +59,21 @@ The `SvelteWrite.Collection` component gives you access to a collection that wil
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/sveltewrite';
+	import * as SW from '@theofficialurban/sveltewrite';
+	import { page } from '$app/stores';
+	const sveltewrite = $page.data.sveltewrite;
 </script>
 
-<SvelteWrite.Provider projectId="1234" let:sveltewrite>
-	<SvelteWrite.Collection {sveltewrite} dbId="123" colId="321" let:collection>
-		<svelte:fragment slot="loading">Loading.....</svelte:fragment>
-		{#each collection.documents as doc}
-		<span>{doc.$id}</span>
-		{/each}
-	</SvelteWrite.Collection>
-</SvelteWrite.Provider>
+<SW.Collection {sveltewrite} dbId="123" colId="321" let:collection>
+	<svelte:fragment slot="loading">Loading.....</svelte:fragment>
+	{#each collection.documents as doc}
+	<span>{doc.$id}</span>
+	{/each}
+	<SW.Collection> </SW.Collection
+></SW.Collection>
 ```
 
-### `SvelteWrite.Bucket`
+### `SW.Bucket`
 
 Realtime Access to Storage Buckets
 
@@ -87,20 +93,21 @@ Realtime Access to Storage Buckets
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/sveltewrite';
+	import * as SW from '@theofficialurban/sveltewrite';
+	import { page } from '$app/stores';
+	const sveltewrite = $page.data.sveltewrite;
 </script>
 
-<SvelteWrite.Provider projectId="1234" let:sveltewrite>
-	<SvelteWrite.Bucket {sveltewrite} bucketId="123" let:bucket>
-		<svelte:fragment slot="loading">Loading.....</svelte:fragment>
-		{#each bucket.files as file}
-		<span>{file.$id}</span>
-		{/each}
-	</SvelteWrite.Bucket>
-</SvelteWrite.Provider>
+<SW.Bucket {sveltewrite} bucketId="123" let:bucket>
+	<svelte:fragment slot="loading">Loading.....</svelte:fragment>
+	{#each bucket.files as file}
+	<span>{file.$id}</span>
+	{/each}
+	<SW.Bucket> </SW.Bucket
+></SW.Bucket>
 ```
 
-### `SvelteWrite.AccountProvider`
+### `SW.AccountProvider`
 
 **Props**
 `sveltewrite` - SvelteWrite instance
@@ -117,25 +124,26 @@ _No Default Slot_
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/sveltewrite';
+	import * as SW from '@theofficialurban/sveltewrite';
+	import { page } from '$app/stores';
+	const sveltewrite = $page.data.sveltewrite;
 </script>
 
-<SvelteWrite.Provider projectId="1234" let:sveltewrite>
-	<!-- Can use the login component too -->
+<!-- Can use the login component too -->
 
-	<SvelteWrite.AccountProvider {sveltewrite}>
-		<svelte:fragment slot="loggedIn" let:currentUser>
-			Logged in as {currentUser.name}
-		</svelte:fragment>
+<SW.AccountProvider {sveltewrite}>
+	<svelte:fragment slot="loggedIn" let:currentUser>
+		Logged in as {currentUser.name}
+	</svelte:fragment>
 
-		<svelte:fragment slot="loggedOut">
-			<SvelteWrite.Login {sveltewrite} />
-		</svelte:fragment>
-	</SvelteWrite.AccountProvider>
-</SvelteWrite.Provider>
+	<svelte:fragment slot="loggedOut">
+		<SW.Login {sveltewrite} />
+	</svelte:fragment>
+	<SW.AccountProvider></SW.AccountProvider
+></SW.AccountProvider>
 ```
 
-### `SvelteWrite.Document`
+### `SW.Document`
 
 A document with realtime updates
 
@@ -156,12 +164,13 @@ A document with realtime updates
 
 ```html
 <script lang="ts">
-	import SvelteWrite from '@theofficialurban/sveltewrite';
+	import * as SW from '@theofficialurban/sveltewrite';
+	import { page } from '$app/stores';
+	const sveltewrite = $page.data.sveltewrite;
 </script>
 
-<SvelteWrite.Provider projectId="1234" let:sveltewrite>
-	<SvelteWrite.Document {sveltewrite} dbId="123" colId="123" docId="123" let:document>
-		{document.item.$id}
-	</SvelteWrite.Document>
-</SvelteWrite.Provider>
+<SW.Document {sveltewrite} dbId="123" colId="123" docId="123" let:document>
+	{document.item.$id}
+	<SW.Document> </SW.Document
+></SW.Document>
 ```
