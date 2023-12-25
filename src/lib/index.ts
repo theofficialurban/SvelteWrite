@@ -15,5 +15,5 @@ const SvelteWrite = {
 	SvelteWrite: SW,
 	Document: AppwriteDocument
 };
-
+export type { SW as SvelteWrite };
 export default SvelteWrite;

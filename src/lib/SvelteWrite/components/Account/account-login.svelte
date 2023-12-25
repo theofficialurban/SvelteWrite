@@ -33,7 +33,7 @@
 </script>
 
 {#if !loading}
-	<slot>
+	<slot {attemptLogin}>
 		{#if error != ''}
 			<div class="alert alert-error">
 				{error}
