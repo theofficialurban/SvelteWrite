@@ -2,48 +2,27 @@ import { browser } from '$app/environment';
 import { Account, Client, Storage } from 'appwrite';
 import { type Models, Databases } from 'appwrite';
 import { remove } from 'lodash-es';
-/**
- * @enum AppwriteChannel
- * Appwrite Channels
- */
-export enum AppwriteChannel {
-	account,
-	collectionDocuments,
-	documents,
-	document,
-	files,
-	file,
-	bucket,
-	teams,
-	team,
-	memberships,
-	membership,
-	executions,
-	execution,
-	function
-}
-/**
- * @enum AppwriteEvent
- * CRUD Event Enum
- */
-export enum AppwriteEvent {
-	DOCUMENT_DELETE,
-	DOCUMENT_CREATE,
-	DOCUMENT_UPDATE,
-	BUCKET_CREATE,
-	BUCKET_DELETE,
-	BUCKET_UPDATE
-}
+import {
+	type AppwriteEvent,
+	type AppwriteChannel,
+	type FileReturn,
+	type ReactiveBucket,
+	type ReactiveCollection,
+	type ReactiveDocument
+} from './types.js';
+
 /**
  * Mapping of Events to the Event Strings
+ * AppwriteEvent => string
+ * @example `AppwriteEvents[AppwriteEvent.DOCUMENT_DELETE]` => `databases.*.collections.*.documents.*.delete`
  */
-export const AppwriteEvents: Record<AppwriteEvent, string> = {
-	[AppwriteEvent.DOCUMENT_DELETE]: 'databases.*.collections.*.documents.*.delete',
-	[AppwriteEvent.DOCUMENT_CREATE]: 'databases.*.collections.*.documents.*.create',
-	[AppwriteEvent.DOCUMENT_UPDATE]: 'databases.*.collections.*.documents.*.update',
-	[AppwriteEvent.BUCKET_CREATE]: 'buckets.*.files.*.create',
-	[AppwriteEvent.BUCKET_DELETE]: 'buckets.*.files.*.delete',
-	[AppwriteEvent.BUCKET_UPDATE]: 'buckets.*.files.*.update'
+export const AppwriteEvents: AppwriteEvent = {
+	DOCUMENT_DELETE: 'databases.*.collections.*.documents.*.delete',
+	DOCUMENT_CREATE: 'databases.*.collections.*.documents.*.create',
+	DOCUMENT_UPDATE: 'databases.*.collections.*.documents.*.update',
+	BUCKET_CREATE: 'buckets.*.files.*.create',
+	BUCKET_DELETE: 'buckets.*.files.*.delete',
+	BUCKET_UPDATE: 'buckets.*.files.*.update'
 };
 /**
  * getEvent()
@@ -51,81 +30,52 @@ export const AppwriteEvents: Record<AppwriteEvent, string> = {
  * @param eventsArray eventsArray Payload
  * @returns AppwriteEvent
  */
-function getEvent(type: 'FILES' | 'DOCUMENTS', eventsArray: string[]) {
+function getEvent(type: 'FILES' | 'DOCUMENTS', eventsArray: string[]): keyof AppwriteEvent | null {
 	if (type == 'DOCUMENTS') {
-		const deleteCheck =
-			eventsArray.find((e) => e == AppwriteEvents[AppwriteEvent.DOCUMENT_DELETE]) ?? null;
-		if (deleteCheck) return AppwriteEvent.DOCUMENT_DELETE;
-		const createCheck =
-			eventsArray.find((e) => e == AppwriteEvents[AppwriteEvent.DOCUMENT_CREATE]) ?? null;
-		if (createCheck) return AppwriteEvent.DOCUMENT_CREATE;
-		const updateCheck =
-			eventsArray.find((e) => e == AppwriteEvents[AppwriteEvent.DOCUMENT_UPDATE]) ?? null;
-		if (updateCheck) return AppwriteEvent.DOCUMENT_UPDATE;
+		const deleteCheck = eventsArray.find((e) => e == AppwriteEvents.DOCUMENT_DELETE) ?? null;
+		if (deleteCheck) return 'DOCUMENT_DELETE';
+		const createCheck = eventsArray.find((e) => e == AppwriteEvents.DOCUMENT_CREATE) ?? null;
+		if (createCheck) return 'DOCUMENT_CREATE';
+		const updateCheck = eventsArray.find((e) => e == AppwriteEvents.DOCUMENT_UPDATE) ?? null;
+		if (updateCheck) return 'DOCUMENT_UPDATE';
 		return null;
 	} else if (type == 'FILES') {
-		const deleteCheck =
-			eventsArray.find((e) => e == AppwriteEvents[AppwriteEvent.BUCKET_DELETE]) ?? null;
-		if (deleteCheck) return AppwriteEvent.BUCKET_DELETE;
-		const createCheck =
-			eventsArray.find((e) => e == AppwriteEvents[AppwriteEvent.BUCKET_CREATE]) ?? null;
-		if (createCheck) return AppwriteEvent.BUCKET_CREATE;
-		const updateCheck =
-			eventsArray.find((e) => e == AppwriteEvents[AppwriteEvent.BUCKET_UPDATE]) ?? null;
-		if (updateCheck) return AppwriteEvent.BUCKET_UPDATE;
+		const deleteCheck = eventsArray.find((e) => e == AppwriteEvents.BUCKET_DELETE) ?? null;
+		if (deleteCheck) return 'BUCKET_DELETE';
+		const createCheck = eventsArray.find((e) => e == AppwriteEvents.BUCKET_CREATE) ?? null;
+		if (createCheck) return 'BUCKET_CREATE';
+		const updateCheck = eventsArray.find((e) => e == AppwriteEvents.BUCKET_UPDATE) ?? null;
+		if (updateCheck) return 'BUCKET_UPDATE';
 	}
 	return null;
 }
-/**
- * Mapping of Channels
- */
-export const AppwriteChannels: Record<AppwriteChannel, string> = {
-	[AppwriteChannel.account]: 'account',
-	[AppwriteChannel.collectionDocuments]: 'databases.[dbId].collections.[collId].documents',
-	[AppwriteChannel.documents]: 'documents',
-	[AppwriteChannel.document]: 'databases.[dbId].collections.[collId].documents.[itemId]',
-	[AppwriteChannel.files]: 'files',
-	[AppwriteChannel.file]: 'buckets.[bucketId].files.[itemId]',
-	[AppwriteChannel.bucket]: 'buckets.[bucketId].files',
-	[AppwriteChannel.teams]: 'teams',
-	[AppwriteChannel.team]: 'teams.[teamId]',
-	[AppwriteChannel.memberships]: 'memberships',
-	[AppwriteChannel.membership]: 'memberships.[membershipId]',
-	[AppwriteChannel.executions]: 'executions',
-	[AppwriteChannel.execution]: 'executions.[executionId]',
-	[AppwriteChannel.function]: 'functions.[fnId]'
-};
-/**
- * @type Replaceable
- * Replacable Slot for ID
- */
-type Replaceable =
-	| '[ID]'
-	| '[dbId]'
-	| '[itemId]'
-	| '[bucketId]'
-	| '[fileId]'
-	| '[collId]'
-	| '[fnId]'
-	| '[executionId]'
-	| '[membershipId]'
-	| '[teamId]';
-/**
- * fillChannelString()
- * @param channel AppwriteChannel
- * @param r replaceables ['[ID]', "123"] = [ID] => 123
- * @returns Filled string
- */
-function fillChannelString(channel: AppwriteChannel, ...r: [Replaceable, string][]) {
-	let s = AppwriteChannels[channel];
-	r.forEach((rep) => {
-		const [key, val] = rep;
-		s = s.replaceAll(key, val);
-	});
-	return s;
-}
 
-export class Document<T extends Models.Document = Models.Document> {
+/**
+ * AppwriteChannels
+ * Provides methods to fill and create channels for listening
+ * @example
+ * AppwriteChannels.document("dbId", "colId", "itemId") => `databases.dbId.collections.colId.documents.itemId`
+ */
+export const AppwriteChannels: AppwriteChannel = {
+	account: () => 'account',
+	collectionDocuments: (dbId: string, colId: string) =>
+		`databases.${dbId}.collections.${colId}.documents`,
+	documents: () => 'documents',
+	document: (dbId: string, colId: string, itemId: string) =>
+		`databases.${dbId}.collections.${colId}.documents.${itemId}`,
+	files: () => 'files',
+	file: (bucketId: string, itemId: string) => `buckets.${bucketId}.files.${itemId}`,
+	bucket: (bucketId: string) => `buckets.${bucketId}.files`,
+	teams: () => 'teams',
+	team: (teamId: string) => `teams.${teamId}`,
+	memberships: () => 'memberships',
+	membership: (memId: string) => `memberships.${memId}`,
+	executions: () => 'executions',
+	execution: (exeId: string) => `executions.${exeId}`,
+	function: (fnId: string) => `functions.${fnId}`
+};
+
+export class Document<T extends Models.Document = Models.Document> implements ReactiveDocument<T> {
 	#item = $state<T | null>(null);
 	constructor(
 		private sveltewrite: SvelteWrite,
@@ -143,12 +93,8 @@ export class Document<T extends Models.Document = Models.Document> {
 			.catch((e) => console.error(e));
 	}
 	#listen = async () => {
-		const channel = fillChannelString(
-			AppwriteChannel.document,
-			['[dbId]', this.dbId],
-			['[collId]', this.colId],
-			['[itemId]', this.docId]
-		);
+		const channel = AppwriteChannels.document(this.dbId, this.colId, this.docId);
+
 		this.sveltewrite.client.subscribe<T>(channel, (p) => {
 			this.#item = p.payload;
 		});
@@ -157,13 +103,59 @@ export class Document<T extends Models.Document = Models.Document> {
 		return this.#item;
 	}
 }
+/**
+ * @class BucketFile
+ * @implements {FileReturn}
+ * A single file from a storage bucket
+ * @param SvelteWrite - SvelteWrite instance
+ * @param bucketId - Bucket ID
+ * @param fileId - File ID
+ */
+export class BucketFile implements FileReturn {
+	#url = $state<URL | null>(null);
+	#file = $state<Blob | null>(null);
+	constructor(
+		private SvelteWrite: SvelteWrite,
+		private bucketId: string,
+		private fileId: string
+	) {
+		this.initialLoad();
+		return this;
+	}
+	private initialLoad = async () => {
+		try {
+			const file = await this.SvelteWrite.storage.getFileDownload(this.bucketId, this.fileId);
+			this.#url = file;
+			await this.downloadFile();
+		} catch (error) {
+			throw new Error(`Could not load file`);
+		}
+	};
+	private downloadFile = async () => {
+		try {
+			if (this.#url) {
+				const file = await fetch(this.#url);
+				const blob = await file.blob();
+				this.#file = blob;
+			}
+		} catch (error) {
+			throw new Error('Could not get file Blob');
+		}
+	};
+	get file() {
+		return this.#file;
+	}
+	get url() {
+		return this.#url;
+	}
+}
 
 /**
  * @class Bucket
  * Represents a Appwrite Storage Bucket
  * @see {Storage}
  */
-export class Bucket {
+export class Bucket implements ReactiveBucket {
 	#files: Models.File[] = $state<Models.File[]>([]);
 	#total: number = $state<number>(0);
 	constructor(
@@ -173,14 +165,15 @@ export class Bucket {
 	) {
 		this.initialLoad(queries).then(() => {
 			if (browser) {
-				const channel = fillChannelString(AppwriteChannel.bucket, ['[bucketId]', this.bucketId]);
+				const channel = AppwriteChannels['bucket'](this.bucketId);
+				//const channel = fillChannelString(AppwriteChannel.bucket, ['[bucketId]', this.bucketId]);
 				this.SvelteWrite.client.subscribe<Models.File>(channel, (payload) => {
-					const eventType = getEvent('FILES', payload.events);
-					if (eventType == AppwriteEvent.BUCKET_CREATE) {
+					const eventType: keyof AppwriteEvent | null = getEvent('FILES', payload.events);
+					if (eventType == 'BUCKET_CREATE') {
 						this.addFile(payload.payload);
-					} else if (eventType == AppwriteEvent.BUCKET_DELETE) {
+					} else if (eventType == 'BUCKET_DELETE') {
 						this.removeFile(payload.payload.$id);
-					} else if (eventType == AppwriteEvent.BUCKET_UPDATE) {
+					} else if (eventType == 'BUCKET_UPDATE') {
 						this.removeFile(payload.payload.$id);
 						this.addFile(payload.payload);
 					}
@@ -213,7 +206,14 @@ export class Bucket {
 	};
 }
 
-export class Collection<T extends Models.Document = Models.Document> {
+/**
+ * @class Collection
+ * Realtime / Store Handler for Appwrite Collections
+ * @implements {ReactiveCollection<T>}
+ */
+export class Collection<T extends Models.Document = Models.Document>
+	implements ReactiveCollection<T>
+{
 	#total: number = $state<number>(0);
 	#documents: T[] = $state<T[]>([]);
 	constructor(
@@ -222,20 +222,17 @@ export class Collection<T extends Models.Document = Models.Document> {
 		private collectionId: string,
 		queries: string[] = []
 	) {
-		const channel = fillChannelString(
-			AppwriteChannel.documents,
-			['[dbId]', this.dbId],
-			['[collId]', this.collectionId]
-		);
+		const channel = AppwriteChannels.collectionDocuments(this.dbId, this.collectionId);
+
 		this.initialLoad(queries).then(() => {
 			if (browser) {
 				this.SvelteWrite.client.subscribe<T>(channel, (payload) => {
-					const eventType = getEvent('DOCUMENTS', payload.events);
-					if (eventType == AppwriteEvent.DOCUMENT_DELETE) {
+					const eventType: keyof AppwriteEvent | null = getEvent('DOCUMENTS', payload.events);
+					if (eventType == 'DOCUMENT_DELETE') {
 						this.removeDocument(payload.payload.$id);
-					} else if (eventType == AppwriteEvent.DOCUMENT_CREATE) {
+					} else if (eventType == 'DOCUMENT_CREATE') {
 						this.addDocument(payload.payload);
-					} else if (eventType == AppwriteEvent.DOCUMENT_UPDATE) {
+					} else if (eventType == 'DOCUMENT_UPDATE') {
 						this.removeDocument(payload.payload.$id);
 						this.addDocument(payload.payload);
 					}
@@ -271,6 +268,13 @@ export class Collection<T extends Models.Document = Models.Document> {
 		return this.#documents;
 	}
 }
+/**
+ * @class SvelteWrite
+ * Primary class to be passed into components
+ * @prop {Databases} - Appwrite Databases Class
+ * @prop {Storage} - Appwrite Storage Class
+ * @prop {Account} - Appwrite Account Class
+ */
 export default class SvelteWrite {
 	database: Databases;
 	storage: Storage;

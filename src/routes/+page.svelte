@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import * as SW from '$lib/index.js';
 
 	import { page } from '$app/stores';
@@ -13,9 +13,9 @@
 				{#each collection.documents as item}
 					<span>{item.$id} {item.test}</span><br />
 				{/each}
-			</SW.Collection> -->
+			</SW.Collection> 
 		<SW.Document {sveltewrite} dbId="main" colId="test" docId="658756e3d9c8a3759624" let:document>
 			{document.item?.$id}
 		</SW.Document>
 	</svelte:fragment>
-</SW.AccountProvider><br />
+</SW.AccountProvider><br /> -->

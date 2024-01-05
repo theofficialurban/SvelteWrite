@@ -1,6 +1,6 @@
-import { SvelteWrite } from '$lib/index.js';
 import { Client } from 'appwrite';
-import type { PageLoad } from './$types.js';
+import type { LayoutLoad } from './$types.js';
+import SvelteWrite from '$lib/SvelteWrite/SvelteWrite.svelte.js';
 
 export const load = (async () => {
 	const client = new Client()
@@ -10,4 +10,4 @@ export const load = (async () => {
 	return {
 		sveltewrite
 	};
-}) satisfies PageLoad;
+}) satisfies LayoutLoad;
