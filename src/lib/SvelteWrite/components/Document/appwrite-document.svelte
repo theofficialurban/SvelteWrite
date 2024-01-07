@@ -14,7 +14,11 @@
 </script>
 
 {#if document.item}
-	<slot {document} />
+	<slot {document}>
+		<div data-testid="loaded" />
+	</slot>
 {:else}
-	<slot name="loading" />
+	<slot name="loading">
+		<div data-testid="loading" />
+	</slot>
 {/if}

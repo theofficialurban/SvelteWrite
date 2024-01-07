@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { Account, Client, Storage } from 'appwrite';
+import { Account, Client, Graphql, Storage } from 'appwrite';
 import { type Models, Databases } from 'appwrite';
 import { remove } from 'lodash-es';
 import {
@@ -279,10 +279,12 @@ export default class SvelteWrite {
 	database: Databases;
 	storage: Storage;
 	account: Account;
+	graphql: Graphql;
 	constructor(public client: Client) {
 		this.database = new Databases(this.client);
 		this.storage = new Storage(this.client);
 		this.account = new Account(this.client);
+		this.graphql = new Graphql(this.client);
 
 		return this;
 	}

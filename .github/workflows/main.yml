@@ -2,7 +2,7 @@ name: Publish Package to NPM Registry & To GitHub Packages
 
 on:
   release:
-    types: [created]
+    types: [released]
 
 jobs:
   build:

@@ -1,3 +1,5 @@
+<svelte:options accessors={true} />
+
 <script lang="ts">
 	import SvelteWrite, { Collection } from '$lib/SvelteWrite/SvelteWrite.svelte.js';
 
@@ -11,13 +13,15 @@
 	}
 	let { sveltewrite, dbId, colId, queries = [] } = $props<$$props>();
 
-	const collection: Collection<T> = new Collection<T>(sveltewrite, dbId, colId, queries);
+	export const collection: Collection<T> = new Collection<T>(sveltewrite, dbId, colId, queries);
 </script>
 
 {#if collection.total > 0}
-	<slot {collection} />
+	<slot {collection}>
+		<div data-testid="loaded">Loaded</div>
+	</slot>
 {:else}
 	<slot name="loading">
-		<span class="loading loading-spinner w-[200px]" />
+		<span data-testid="loading" class="loading loading-spinner w-[200px]" />
 	</slot>
 {/if}
